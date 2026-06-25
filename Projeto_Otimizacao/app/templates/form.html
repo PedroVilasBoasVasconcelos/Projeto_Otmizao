@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Projeto de Otimização</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="page-shell fade-in">
+
+    <header class="hero">
+        <div class="hero-content">
+            <span class="badge">Otimização Linear</span>
+            <h1>Solver de Programação Linear</h1>
+            <p>
+                Monte a função objetivo, defina as restrições do problema
+                e encontre a solução ótima de forma simples e visual.
+            </p>
+        </div>
+
+        <div class="hero-card">
+            <span>Simplex</span>
+            <strong>Modelo matemático</strong>
+            <small>Função objetivo + restrições + análise</small>
+        </div>
+    </header>
+
+    <section class="panel">
+        <div class="section-title">
+            <span>01</span>
+            <div>
+                <h2>Configuração do problema</h2>
+                <p>Escolha a quantidade de variáveis e restrições.</p>
+            </div>
+        </div>
+
+        <form action="{{ url_for('initiate_simplex') }}" method="POST" class="grid-form">
+
+            <div class="input-group">
+                <label for="num_variables">Quantidade de variáveis</label>
+                <select name="num_variables" id="num_variables" required>
+                    {% for i in range(2, 5) %}
+                        <option value="{{ i }}" {% if num_variables == i %}selected{% endif %}>
+                            {{ i }} variáveis
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="num_restrictions">Quantidade de restrições</label>
+                <select name="num_restrictions" id="num_restrictions" required>
+                    {% for i in range(1, 11) %}
+                        <option value="{{ i }}" {% if num_restrictions == i %}selected{% endif %}>
+                            {{ i }} restrições
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Montar modelo
+            </button>
+        </form>
+    </section>
+
+    {% if num_variables > 0 and num_restrictions > 0 %}
+
+    <section class="panel">
+        <div class="section-title">
+            <span>02</span>
+            <div>
+                <h2>Função objetivo</h2>
+                <p>Escolha se deseja maximizar ou minimizar e informe os coeficientes.</p>
+            </div>
+        </div>
+
+        <form action="{{ url_for('process') }}" method="POST">
+
+            <div class="input-group" style="margin-bottom: 18px;">
+                <label for="objective_type">Tipo de otimização</label>
+                <select name="objective_type" id="objective_type" required>
+                    <option value="max" {% if objective_type == 'max' %}selected{% endif %}>
+                        Maximizar
+                    </option>
+                    <option value="min" {% if objective_type == 'min' %}selected{% endif %}>
+                        Minimizar
+                    </option>
+                </select>
+            </div>
+
+            <div class="formula-box">
+                <strong>
+                    {% if objective_type == 'min' %}
+                        Min Z =
+                    {% else %}
+                        Max Z =
+                    {% endif %}
+                </strong>
+
+                <div class="formula-items">
+                    {% for i in range(num_variables) %}
+                        <div class="coefficient">
+                            <input 
+                                type="number" 
+                                step="any" 
+                                name="variable_{{ i }}" 
+                                placeholder="Coef."
+                                value="{{ objective_values[i] if objective_values|length > i else '' }}"
+                                required
+                            >
+                            <span>{{ labels[i] }}</span>
+                        </div>
+
+                        {% if not loop.last %}
+                            <span class="plus">+</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="section-title spacing-top">
+                <span>03</span>
+                <div>
+                    <h2>Restrições</h2>
+                    <p>Preencha os coeficientes, operador e lado direito.</p>
+                </div>
+            </div>
+
+            <div class="restrictions-list">
+                {% for i in range(num_restrictions) %}
+                    <div class="restriction-card">
+                        <div class="restriction-header">
+                            <strong>Restrição {{ i + 1 }}</strong>
+                        </div>
+
+                        <div class="restriction-grid">
+                            {% for j in range(num_variables) %}
+                                <div class="input-group small">
+                                    <label>{{ labels[j] }}</label>
+                                    <input 
+                                        type="number" 
+                                        step="any" 
+                                        name="restriction_{{ i }}_{{ j }}" 
+                                        placeholder="Coef."
+                                        value="{{ restrictions_values[i][j] if restrictions_values|length > i and restrictions_values[i]|length > j else '' }}"
+                                        required
+                                    >
+                                </div>
+                            {% endfor %}
+
+                            <div class="input-group small">
+                                <label>Operador</label>
+                                <select name="operator_{{ i }}" required>
+                                    <option 
+                                        value="&lt;="
+                                        {% if restrictions_operator_values|length > i and restrictions_operator_values[i] == '<=' %}selected{% endif %}
+                                    >
+                                        ≤
+                                    </option>
+
+                                    <option 
+                                        value="&gt;="
+                                        {% if restrictions_operator_values|length > i and restrictions_operator_values[i] == '>=' %}selected{% endif %}
+                                    >
+                                        ≥
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="input-group small">
+                                <label>Lado direito</label>
+                                <input 
+                                    type="number" 
+                                    step="any" 
+                                    name="value_right_{{ i }}" 
+                                    placeholder="Valor"
+                                    value="{{ restrictions_right_values[i] if restrictions_right_values|length > i else '' }}"
+                                    required
+                                >
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">
+                    Otimizar modelo
+                </button>
+
+                <a href="{{ url_for('reset') }}" class="btn btn-secondary">
+                    Resetar tudo
+                </a>
+            </div>
+
+        </form>
+    </section>
+
+    {% endif %}
+
+</div>
+
+<script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+</body>
+</html>

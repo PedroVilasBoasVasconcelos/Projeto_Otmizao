@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Pós-Otimização</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="page-shell fade-in">
+
+    <header class="hero">
+        <div class="hero-content">
+            <span class="badge">Pós-Otimização</span>
+            <h1>Resultado do Novo Cenário</h1>
+            <p>
+                O sistema recalculou o problema considerando as alterações
+                feitas nas restrições.
+            </p>
+        </div>
+
+        <div class="hero-card result-highlight">
+            <span>
+                {% if objective_type == 'min' %}
+                    Minimização
+                {% else %}
+                    Maximização
+                {% endif %}
+            </span>
+            <strong>R$ {{ objective_fuction | round(2) }}</strong>
+            <small>Resultado após alteração</small>
+        </div>
+    </header>
+
+    <section class="panel">
+
+        {% if result == 0 %}
+            <div class="status-card ok">
+                <strong>Solução viável</strong>
+                <p>O novo cenário ainda possui uma solução válida.</p>
+            </div>
+        {% else %}
+            <div class="status-card error">
+                <strong>Solução não viável</strong>
+                <p>O novo cenário não possui uma solução viável.</p>
+            </div>
+        {% endif %}
+
+    </section>
+
+    <section class="result-grid">
+
+        <div class="panel">
+            <div class="section-title">
+                <span>01</span>
+                <div>
+                    <h2>Função objetivo</h2>
+                    <p>
+                        {% if objective_type == 'min' %}
+                            Valor mínimo recalculado do problema.
+                        {% else %}
+                            Valor máximo recalculado do problema.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="big-result">
+                Z = R$ {{ objective_fuction | round(2) }}
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section-title">
+                <span>02</span>
+                <div>
+                    <h2>Variáveis</h2>
+                    <p>Valores obtidos no novo cenário.</p>
+                </div>
+            </div>
+
+            <div class="data-list">
+                {% for i in range(num_variables) %}
+                    <div class="data-row">
+                        <span>Variável {{ labels[i] }}</span>
+                        <strong>{{ variables_results[i] | round(2) }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </section>
+
+    <div class="actions">
+        <a href="{{ url_for('process') }}" class="btn btn-secondary">
+            Voltar para análise
+        </a>
+
+        <a href="{{ url_for('reset') }}" class="btn btn-danger">
+            Resetar tudo
+        </a>
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+</body>
+</html>

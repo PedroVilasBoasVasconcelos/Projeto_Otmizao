@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultado da Otimização</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="page-shell fade-in">
+
+    <header class="hero">
+        <div class="hero-content">
+            <span class="badge">Resultado</span>
+            <h1>Resultados da Otimização</h1>
+            <p>
+                Abaixo estão a função objetivo, os valores das variáveis
+                e a análise de preço sombra das restrições.
+            </p>
+        </div>
+
+        <div class="hero-card result-highlight">
+            <span>
+                {% if objective_type == 'min' %}
+                    Minimização
+                {% else %}
+                    Maximização
+                {% endif %}
+            </span>
+            <strong>R$ {{ objective_fuction | round(2) }}</strong>
+            <small>Valor ótimo encontrado</small>
+        </div>
+    </header>
+
+    <section class="result-grid">
+
+        <div class="panel">
+            <div class="section-title">
+                <span>01</span>
+                <div>
+                    <h2>Função objetivo</h2>
+                    <p>
+                        {% if objective_type == 'min' %}
+                            Valor mínimo encontrado para a função objetivo.
+                        {% else %}
+                            Valor máximo encontrado para a função objetivo.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="big-result">
+                Z = R$ {{ objective_fuction | round(2) }}
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section-title">
+                <span>02</span>
+                <div>
+                    <h2>Variáveis</h2>
+                    <p>Valores encontrados para cada variável.</p>
+                </div>
+            </div>
+
+            <div class="data-list">
+                {% for i in range(num_variables) %}
+                    <div class="data-row">
+                        <span>Variável {{ labels[i] }}</span>
+                        <strong>{{ variables_results[i] | round(2) }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </section>
+
+    <section class="panel">
+        <div class="section-title">
+            <span>03</span>
+            <div>
+                <h2>Preço sombra</h2>
+                <p>Impacto das restrições no resultado final.</p>
+            </div>
+        </div>
+
+        <div class="data-list">
+            {% for i in range(num_restrictions) %}
+                <div class="data-row">
+                    <span>Restrição {{ i + 1 }}</span>
+                    <strong>R$ {{ shadow_price[i] | round(2) }}</strong>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="section-title">
+            <span>04</span>
+            <div>
+                <h2>Análise de sensibilidade</h2>
+                <p>Altere o lado direito das restrições para testar um novo cenário.</p>
+            </div>
+        </div>
+
+        <form action="{{ url_for('sensitivity_analysis') }}" method="POST">
+
+            <div class="sensitivity-grid">
+                {% for i in range(num_restrictions) %}
+                    <div class="input-group">
+                        <label>Alteração na restrição {{ i + 1 }}</label>
+                        <input 
+                            type="number" 
+                            step="any" 
+                            name="restriction_right_change_{{ i }}" 
+                            value="0"
+                            required
+                        >
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="actions">
+
+                <a href="{{ url_for('initiate_simplex') }}" class="btn btn-secondary">
+                    Alterar restrições
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    Analisar cenário
+                </button>
+
+                <a href="{{ url_for('reset') }}" class="btn btn-danger">
+                    Resetar tudo
+                </a>
+
+            </div>
+
+        </form>
+    </section>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+</body>
+</html>
